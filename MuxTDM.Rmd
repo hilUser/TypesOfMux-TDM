@@ -1,0 +1,180 @@
+---
+title: "ACP-159 Redes inalámbricas Time-Division Multipexing"
+author: "Hilmer Jimenez Moo"
+date: "01/10/2023"
+output:
+  html_document:
+    df_print: paged
+  rmdformats::readthedown:
+    highlight: kate
+    cards: no
+  pdf_document: default
+subtitle: Multiplexación TDM
+---
+
+
+```{r knitr_init, echo=FALSE, error=FALSE, message=FALSE, warning=FALSE, cache=FALSE}
+library(knitr)
+library(highcharter)
+library(rmdformats)
+library(magrittr)
+library(gsignal)
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+
+# Multiplexación en el dominio del tiempo
+
+## Ejercicio 1:
+
+Como parte de la actividades se tomara en cuenta multiplexar la siguiente señal:
+
+$$\cos(10\pi t)$$
+
+Primeramente al tener la señal ya mencionada, se dará el inicio a la tecnica conocida como el <b>MUESTREO DE UNA SEÑAL</b> Seguidamente observamos que la señal coseno 
+es una señal de banda limitada, con ancho de banda f=5 Hz, por lo tanto de acuerdo al teorema de <b>muestreo de Nyquist</b>, ésta debe muestrearse a una velocidad de por lo menos 10 Hz. Se  muestra  en el siguiente código la forma de la señal orginal y el pulso la muestrará.
+
+```{r  mUx TDM cos10pi*t}
+
+x   <- seq(0,2*20*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length=length(x)) #SE DECLARA EL TIEMPO.
+ft  <- cos(10*pi*t) #SEÑAL ORIGINAL.
+highchart() %>% hc_add_series(cbind(t,sq), name="Square", color = "#ff00ff") %>% hc_title(text="Muestreo de señal \\(f(t) = \\cos(10\\pi  t)\\)", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.3, max = 1.3, allowDecimal = T) %>% hc_chart(zoomType="xy") %>% hc_add_series(cbind(t,ft), name="Señal Original", color = "#00ff00")
+
+```
+
+Por consiguiente se realiza un muestreo de la señal: $\cos(10\pi t)$ Más especifica debido a las siguientes lineas de código.
+
+```{r mUx TDM cos10pi*t sample}
+x   <- seq(0,2*20*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length = length(x))
+ft  <- cos(10*pi*t)
+samp<- sq*ft
+highchart() %>% hc_add_series(cbind(t,samp), name="Sampled", color = "#ff00ff") %>% hc_add_series(cbind(t, ft), dashStyle = "Dash", name="Original", color = "#00ff00") %>%  hc_title(text="Muestreo de señal coseno", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.8, max = 1.8, allowDecimal = T) %>% hc_chart(zoomType="xy")
+```
+
+## Recuperación de señales muestreadas
+
+Algo fundamental es que una señal previamente <b>muestreada</b> puede recuperarse mediante un filtro <b>pasabaja</b>  A continuación se muestra el proceso de recuperación de la señal.
+
+```{r mUx TDM cos10pi*t filtr}
+library(gsignal)
+library(highcharter)
+x   <- seq(0,2*20*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length = length(x))
+ft  <- cos(10*pi*t) #SEÑAL ORIGINAL.
+samp<- sq*ft #MUESTRO * SEÑAL ORIGINAL
+def <- butter(5,0.02) #FILTRO PASABAJA.
+rec <- filter(def, samp) #
+highchart() %>% hc_add_series(cbind(t,5*rec), name="Recuperada", color = "#ff00ff") %>% hc_add_series(cbind(t, ft), dashStyle = "Dash", name="Original", color = "#00ff00") %>%  hc_title(text="SEÑAL RECUPERADA", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.8, max = 1.8, allowDecimal = T) %>% hc_chart(zoomType="xy")
+```
+
+## EJERCICIO 2: 
+
+Como parte de la actividades se tomara en cuenta multiplexar la siguiente señal:
+
+$$\cos(20\pi t)$$
+
+```{r  mUx TDM cos20pi*t}
+
+x   <- seq(0,2*40*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length=length(x)) #SE DECLARA EL TIEMPO.
+ft  <- cos(20*pi*t) #SEÑAL ORIGINAL.
+highchart() %>% hc_add_series(cbind(t,sq), name="Square", color = "#ff00ff") %>% hc_title(text="Muestreo de señal \\(f(t) = \\cos(20\\pi  t)\\)", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.3, max = 1.3, allowDecimal = T) %>% hc_chart(zoomType="xy") %>% hc_add_series(cbind(t,ft), name="Señal Original", color = "#00ff00")
+
+```
+
+
+Se realiza un muestreo de la señal: $\cos(20\pi t)$ Más especifica debido a las siguientes lineas de código.
+
+```{r mUx TDM cos20pi*t sample}
+x   <- seq(0,2*40*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length = length(x))
+ft  <- cos(20*pi*t)
+samp<- sq*ft
+highchart() %>% hc_add_series(cbind(t,samp), name="Sampled", color = "#ff00ff") %>% hc_add_series(cbind(t, ft), dashStyle = "Dash", name="Original", color = "#00ff00") %>%  hc_title(text="Muestreo de señal coseno", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.8, max = 1.8, allowDecimal = T) %>% hc_chart(zoomType="xy")
+```
+
+
+## Recuperación de señales muestreadas
+
+Algo fundamental es que una señal previamente <b>muestreada</b> puede recuperarse mediante un filtro <b>pasabaja</b>  A continuación se muestra el proceso de recuperación de la señal.
+
+```{r mUx TDM cos20pi*t filtr}
+library(gsignal)
+library(highcharter)
+x   <- seq(0,2*40*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length = length(x))
+ft  <- cos(20*pi*t) #SEÑAL ORIGINAL.
+samp<- sq*ft #MUESTRO * SEÑAL ORIGINAL
+def <- butter(5,0.04) #FILTRO PASABAJA. #CHANGE
+rec <- filter(def, samp) #
+highchart() %>% hc_add_series(cbind(t,5*rec), name="Recuperada", color = "#ff00ff") %>% hc_add_series(cbind(t, ft), dashStyle = "Dash", name="Original", color = "#00ff00") %>%  hc_title(text="SEÑAL RECUPERADA", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.8, max = 1.8, allowDecimal = T) %>% hc_chart(zoomType="xy")
+```
+
+## EJERCICIO 3: 
+
+Como parte de la actividades se tomara en cuenta multiplexar la siguiente señal:
+
+$$\frac{4}{\pi}\sin(6\pi t) + \frac{1}{3}\sin(18\pi t)$$
+
+```{r  mUx TDM 4/pi*sen(6pi*t)+1/3*sen(18pi*t)}
+
+x   <- seq(0,2*80*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length=length(x)) #SE DECLARA EL TIEMPO.
+ft  <- 4/pi*sin(6*pi*t)  + 0.3*sin(18*pi*t) #SEÑAL ORIGINAL.
+highchart() %>% hc_add_series(cbind(t,sq), name="Square", color = "#ff00ff") %>% hc_title(text="Muestreo de señal \\(f(t) = \\frac{4}{\\pi}\\sin(6\\pi  t)\\ + \\frac{1}{3}\\sin(18\\pi t)\\ )", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.3, max = 1.3, allowDecimal = T) %>% hc_chart(zoomType="xy") %>% hc_add_series(cbind(t,ft), name="Señal Original", color = "#00ff00")
+
+```
+Se realiza un muestreo de la señal: $\frac{4}{\pi}\sin(6\pi t) + \frac{1}{3}\sin(18\pi t)$ Más especifica debido a las siguientes lineas de código.
+
+```{r mUx TDM 4/pi*sen(6pi*t)+1/3*sen(18pi*t) sample}
+x   <- seq(0,2*80*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length = length(x))
+ft  <- 4/pi*sin(6*pi*t)  + 0.3*sin(18*pi*t) #SEÑAL ORIGINAL.
+samp<- sq*ft
+highchart() %>% hc_add_series(cbind(t,samp), name="Sampled", color = "#ff00ff") %>% hc_add_series(cbind(t, ft), dashStyle = "Dash", name="Original", color = "#00ff00") %>%  hc_title(text="Muestreo de señal coseno", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.8, max = 1.8, allowDecimal = T) %>% hc_chart(zoomType="xy")
+```
+
+## Recuperación de señales muestreadas
+
+Algo fundamental es que una señal previamente <b>muestreada</b> puede recuperarse mediante un filtro <b>pasabaja</b>  A continuación se muestra el proceso de recuperación de la señal.
+
+```{r mUx TDM 4/pi*sen(6pi*t)+1/3*sen(18pi*t) filtr}
+library(gsignal)
+library(highcharter)
+x   <- seq(0,2*80*2*pi, length=1000)
+sq  <- square(x, duty=20)
+sq  <- 0.5*(1+sq)
+t   <- seq(0,2, length = length(x))
+ft  <- 4/pi*sin(6*pi*t)  + 0.3*sin(18*pi*t) #SEÑAL ORIGINAL.
+samp<- sq*ft #MUESTRO * SEÑAL ORIGINAL
+def <- butter(5,0.04) #FILTRO PASABAJA. #CHANGE
+rec <- filter(def, samp) #
+highchart() %>% hc_add_series(cbind(t,5*rec), name="Recuperada", color = "#ff00ff") %>% hc_add_series(cbind(t, ft), dashStyle = "Dash", name="Original", color = "#00ff00") %>%  hc_title(text="SEÑAL RECUPERADA", useHTML=T) %>% hc_add_theme(hc_theme_darkunica()) %>% hc_xAxis(title=list(text="Tiempo")) %>% hc_yAxis(title = list(text="Valores", useHTML=T), min=-1.8, max = 1.8, allowDecimal = T) %>% hc_chart(zoomType="xy")
+```
